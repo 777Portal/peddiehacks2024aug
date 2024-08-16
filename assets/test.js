@@ -2,6 +2,7 @@ var canvas = document.querySelector("canvas");
 var ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+ctx.textBaseline = 'middle';
 
 var offsetY = 0;
 var offsetX = 0;
@@ -36,6 +37,9 @@ canvas.addEventListener("mouseup", function (e) {
 
 // andddd we do mouseover to live update the map. if this gets enough things, it will take a while; so uh yeah;; lets hope not. i should add authentication so people can't just spam the notes.
 canvas.addEventListener("mousemove", (e) => {
+    cords = getMousePosition(canvas, e);
+    document.getElementById('debug').innerText = `x: ${cords.x + offsetX}, y:${cords.y + offsetY} | cords: ${JSON.stringify(cords)}`
+
     if (!isClicking) return;
 
     cords = getMousePosition(canvas, e);
@@ -45,12 +49,28 @@ canvas.addEventListener("mousemove", (e) => {
 
     console.log('offsets: ', offsetX, offsetY);
 
-    document.getElementById('debug').innerText = `${offsetX}, ${offsetY}`
     drawInRange(json);
 });
 
 // eventually we will get this from the server, but this is an example for a circle to test our offset thing
-var json = {x: 0, y: 0, type:'circle_placeholder', color:'hello', text:'test'}
+var json = 
+    {
+        randomId: {
+            x: 10, 
+            y: 10, 
+            type:'circle_placeholder', 
+            color:'hello',
+            text:'test'
+        },
+
+        otherRandomId: {
+            x: 100, 
+            y: 100, 
+            type:'circle_placeholder', 
+            color:'hello',
+            text:'test'
+        }
+    }
 
 function drawInRange(json){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -63,8 +83,8 @@ function drawInRange(json){
     let imgWidth = 100; // setting how big the background texture will be
     let imgHeight = 100;
     
-    let rows = Math.ceil(canvas.height / imgHeight); // how many rows in the background grid
-    let cols = Math.ceil(canvas.width / imgWidth); // setting how many collums will be in the grid
+    let rows = 100 // Math.ceil(canvas.height / imgHeight); // how many rows in the background grid
+    let cols = 100 // Math.ceil(canvas.width / imgWidth); // setting how many collums will be in the grid
     
     for (let row = 0; row < rows; row++) {
         // handle rows
@@ -79,13 +99,27 @@ function drawInRange(json){
             );
         }
     }
-    
-    ctx.beginPath();
-    ctx.stroke();
-    ctx.arc( ( json.x - offsetX), (json.y - offsetY), 40, 0, 2 * Math.PI);
-    ctx.fillStyle = "red";
-    ctx.fill();
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = "blue";
-    ctx.stroke();
+
+
+    console.log(json)
+
+    let blips = json.length
+
+    // rendering individual things returned from the funny json
+    for (let blip in json) {
+        let blipObject = json[blip]
+        console.log( JSON.stringify(blipObject) )
+        ctx.beginPath();
+        ctx.stroke();
+        console.log(blipObject.x, offsetX)
+        let x = blipObject.x - offsetX
+        let y = blipObject.y - offsetY
+        ctx.arc( x, y, 40, 0, 2 * Math.PI);
+        ctx.fillStyle = "red";
+        ctx.fill();
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "blue";
+        ctx.stroke();
+
+    } 
 }
