@@ -58,27 +58,27 @@ function drawInRange(json){
 
     // at this point, its better to just do this later cuz its a lot of math and my brain hurts
 
-    // let img = document.getElementById('source')
+    let img = document.getElementById('source')
 
-    // let imgWidth = 100; // setting how big the background texture will be
-    // let imgHeight = 100;
+    let imgWidth = 100; // setting how big the background texture will be
+    let imgHeight = 100;
     
-    // let rows = Math.ceil(canvas.height / imgHeight); // how many rows in the background grid
-    // let cols = Math.ceil(canvas.width / imgWidth); // setting how many collums will be in the grid
+    let rows = Math.ceil(canvas.height / imgHeight); // how many rows in the background grid
+    let cols = Math.ceil(canvas.width / imgWidth); // setting how many collums will be in the grid
     
-    // for (let row = 0; row < rows; row++) {
-    //     // handle rows
-    //     for (let col = 0; col < cols; col++) {
-    //         // handle collums
-    //         ctx.drawImage(
-    //             img, 
-    //             col * imgWidth + offsetX, // i think, for some reason, its keeping the offsets the same even after they change or something. idk why. its wierd
-    //             row * imgHeight + offsetY, 
-    //             imgWidth, 
-    //             imgHeight
-    //         );
-    //     }
-    // }
+    for (let row = 0; row < rows; row++) {
+        // handle rows
+        for (let col = 0; col < cols; col++) {
+            // handle collums
+            ctx.drawImage(
+                img, 
+                col * imgWidth - offsetX, // i think, for some reason, its keeping the offsets the same even after they change or something. idk why. its wierd
+                row * imgHeight - offsetY, 
+                imgWidth, 
+                imgHeight
+            );
+        }
+    }
     
     ctx.beginPath();
     ctx.stroke();
