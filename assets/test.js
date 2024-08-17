@@ -71,27 +71,34 @@ var json =
     randomId: {
         x: 10, 
         y: 10, 
-        type:'circle_placeholder', 
-        color:'hello',
+        type:'guitar', 
+        color:'red',
         text:'test',
+        user: 'exampleUsername',
+        url: 'https%3A%2F%2Fopen.spotify.com%2Fepisode%2F7makk4oTQel546B0PZlDM5',
+        scale: '1',
         id: 'test'
     },
 
     otherRandomId: {
         x: 100, 
         y: 100, 
-        type:'circle_placeholder', 
-        color:'hello',
+        type:'guitar', 
+        color:'red',
         text:'test',
+        user: 'exampleUsername',
+        scale: '1',
         id: 'test2'
     },
 
     ermmmwhathesigma: {
         x: 999, 
         y: 999, 
-        type:'circle_placeholder', 
-        color:'hello',
+        type:'guitar', 
+        color:'red',
         text:'test',
+        user: 'exampleUsername',
+        scale: '1',
         id: 'test3'
     }
 }
@@ -167,10 +174,10 @@ function drawInRange(json){
         canvas.style.height = "100px"
 
         const r = new rive.Rive({
-            src: "https://cdn.rive.app/animations/vehicles.riv",
+            src: `./assets/${blipObject.type}.riv`,
             canvas: canvas,
             autoplay: true,
-            stateMachines: "bumpy",
+            stateMachines: "State Machine 1",
             onLoad: () => {
               r.resizeDrawingSurfaceToCanvas();
             },
