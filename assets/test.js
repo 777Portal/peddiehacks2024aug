@@ -40,7 +40,6 @@ canvas.addEventListener("mousemove", (e) => {
 document.addEventListener("pointerlockchange", function () {
     if (document.pointerLockElement === canvas) {
         console.log("Pointer is locked");
-        // basically, this is sent when right clicking so, we can open the blip menu
     } else {
         console.log("Pointer is unlocked");
         isClicking = false;
@@ -76,28 +75,27 @@ socket.on('BLIPS', (blipsJson) => {
 var body = document.querySelector('body');
 
 function drawMap(){
-    let img = document.getElementById('source')
-
-    let imgWidth = 100; // setting how big the background texture will be
+    let img = document.getElementById('source');
+    let imgWidth = 100; 
     let imgHeight = 100;
     
-    let rows =  Math.ceil(canvas.height / imgHeight); // how many rows in the background grid
-    let cols =  Math.ceil(canvas.width / imgWidth); // setting how many collums will be in the grid
+    // get the visable area considering offset
+    let startX = Math.floor(offsetX / imgWidth);
+    let startY = Math.floor(offsetY / imgHeight);
     
-    for (let row = 0; row < rows; row++) {
-        // handle rows
-        for (let col = 0; col < cols; col++) {
-            // handle collums
-            ctx.drawImage(
-                img, 
-                col * imgWidth - offsetX, // i think, for some reason, its keeping the offsets the same even after they change or something. idk why. its wierd
-                row * imgHeight - offsetY, 
-                imgWidth, 
-                imgHeight
-            );
+    let rows = Math.ceil(canvas.height / imgHeight) + 2; // +2 to ensure it covers partially visible areas
+    let cols = Math.ceil(canvas.width / imgWidth) + 2;
+    
+    for (let row = -1; row < rows; row++) {
+        for (let col = -1; col < cols; col++) {
+            let x = (col + startX) * imgWidth - offsetX;
+            let y = (row + startY) * imgHeight - offsetY;
+            
+            ctx.drawImage(img, x, y, imgWidth, imgHeight);
         }
     }  
 }
+
 
 async function drawInRange(json){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -114,7 +112,7 @@ async function drawInRange(json){
 
         ctx.beginPath();
         ctx.stroke();
-        ctx.arc( x, y, 40, 0, 2 * Math.PI);
+        ctx.arc( x, y, 10, 0, 2 * Math.PI);
         ctx.fillStyle = "red";
         ctx.fill();
         ctx.strokeStyle = "blue";
@@ -130,7 +128,7 @@ async function drawInRange(json){
         }
 
         let id = blipObject.id
-
+        
         let div = document.createElement('div')
         div.id = id
         div.classList.add('blip')
@@ -152,10 +150,6 @@ async function drawInRange(json){
             },
         });
 
-        // const response = await fetch('https://open.spotify.com/oembed?url=' + blipObject.url);
-        // if (!response.ok) return console.error(`Response status error: ${response.status} on blip id ${id}`);
-        // const spotifyJson = await response.json();
-
         let spotifyEmbed = document.createElement('div')
         spotifyEmbed.innerHTML = blipObject.html
     
@@ -171,4 +165,5 @@ async function drawInRange(json){
 
         body.appendChild(div)
     } 
+
 }
