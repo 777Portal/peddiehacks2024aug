@@ -52,7 +52,7 @@ router.get('/authorize', async (req, res) => {
 
     if ( users.hasOwnProperty(id) ) 
     {
-        users[id].profile = profile
+        users[id].profile = userResult.profile
         return res.status(200).redirect('/') 
     }
 
