@@ -26,6 +26,9 @@ io.engine.use(sessionMiddleware); // and add that session to the socket.io as we
 const authentication = require("./routes/authentication") // import auth routes
 app.use('/api/v1/auth/', authentication)
 
+const blipRoutes = require("./routes/blips") // import auth routes
+app.use('/api/v1/blips/', blipRoutes)
+
 app.use('/assets', express.static('assets')) // public files in ./assets
 
 app.get('/', (req, res) => {
