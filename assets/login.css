@@ -1,0 +1,28 @@
+html {
+    background-color: #050e0b;
+    color: #eaf6f2;
+}
+
+body {
+    align-content: center;
+    text-align: center;
+}
+
+.primary {
+    background-color: #a1ddca;
+}
+
+.secondary {
+    background-color: #298065;
+}
+
+a {
+    padding: 25px;
+    margin: 25px;
+    border: none;
+    border-radius: 15%;
+}
+
+a :hover {
+    background-color: #4ccca3;
+}
