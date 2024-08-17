@@ -23,11 +23,17 @@ const server = require('http').createServer(app); // turn into http so we can ma
 const io = require('socket.io')(server); // socket.io
 io.engine.use(sessionMiddleware); // and add that session to the socket.io as well.
 
+const fs = require('fs'); // for saving stuff
+const { writeFile, readFile } = require('fs');
+
 const authentication = require("./routes/authentication") // import auth routes
 app.use('/api/v1/auth/', authentication)
 
 const blipRoutes = require("./routes/blips") // import auth routes
 app.use('/api/v1/blips/', blipRoutes)
+
+const selfRoutes = require("./routes/self") // import auth routes
+app.use('/api/v1/self/', selfRoutes)
 
 app.use('/assets', express.static('assets')) // public files in ./assets
 
@@ -51,22 +57,64 @@ io.on('connection', function(socket) {
   console.log('A user connected', socketSessionData.username);
 
   socket.on('MOVE', (eventInfo) =>{
-      let x = eventInfo.x,
-          y = eventInfo.y
-
-      // console.log(x, y)
       socket.emit('BLIPS', blips)
     })
 
-    socket.on('createNewBlip', (eventInfo) =>{
+    socket.on('CREATEBLIP', async (eventInfo) =>{
       let link = eventInfo.link,
           thought = eventInfo.thought,
           animation = eventInfo.animation,
           x = eventInfo.x,
           y = eventInfo.y
 
-      console.log(x, y)
+      thought = thought.substr(0, 300)
+
+      console.log(link)
+
+      if (!socketSessionData.authenticated) return socket.emit('ERR', {error: 'Not logged in!'});
+
+      let animations = ['discord', 'guitar']; // have to move this to config at some point for easier access
+
+      if (!animations.includes(animation)) return socket.emit('ERR', {error: 'That type doesn\'t exist!'});
+
+      let userLastBlip = users[socketSessionData.profile.id].lastBlip // get their last blip
+
+      diff = getSecondDiff(new Date(), userLastBlip) // check if the last blip was within 30s
+
+      if (diff < 30) return socket.emit('ERR', {error: 'You are still on cooldown!'}) //  if it was return,
+
+      const response = await fetch('https://open.spotify.com/oembed?url=' + link);
+      if (!response.ok) return console.error(`Response status error: ${response.status} on blip.`); // ensure its an actual spotify song
+      const spotifyJson = await response.json();
+      
+      let uuid = crypto.randomUUID(); // get random uuid
+      while (blips[uuid] ){ //  if it already exists remake it
+        uuid = crypto.randomUUID();
+      }
+
+      let profile = socketSessionData.profile
+
+      // finally declare all the fun stuff
+      blips[uuid] = {};
+      blips[uuid].userId = profile.id;
+      blips[uuid].html = spotifyJson.html;
+      blips[uuid].scale = 1;
+      blips[uuid].x = x;
+      blips[uuid].y = y;
+      blips[uuid].text = thought;
+      blips[uuid].type = animation;
+      blips[uuid].id = uuid;
+      blips[uuid].creationTime = new Date();
+
+      users[socketSessionData.profile.id].lastBlip = new Date(); // and update this so they can't span the heck out of the website without different accounts
+
+      console.log()
+
+      
+      console.log(link, thought, animation, x, y)
+      // and update all clients that the new blip has been created.
       socket.emit('BLIPS', blips)
+      writeFile('./jsons/blips.json', JSON.stringify(blips), (error) => {console.error(error, blips)}) // update users.json
     })
 
 
@@ -75,7 +123,16 @@ io.on('connection', function(socket) {
   });
 });
 
-
 server.listen(port, () => {
     console.log(`app listening on port ${port}`)
 })
+
+function getSecondDiff(secondDate, firstDate) 
+{
+  const secondsDiff = Math.abs(secondDate - firstDate) / 1000;
+  return secondsDiff
+}
+
+function getRandomInt(max) {
+  return Math.floor(Math.random() * max);
+}
