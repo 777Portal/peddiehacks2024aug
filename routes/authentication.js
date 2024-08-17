@@ -46,7 +46,7 @@ router.get('/authorize', async (req, res) => {
     if ( mods.hasOwnProperty(id) ) req.session.mod = true; // will allow me to delete bad blips
 
     req.session.authenticated = true;
-    req.session.info = userResult
+    req.session.profile = userResult
 
     sessionData[sessionId] = req.session
 
@@ -64,6 +64,7 @@ router.get('/authorize', async (req, res) => {
     let user = users[id] // then asign the user object so we can modify it
     
     user.firstLogin = new Date()
+    user.lastBlip = new Date('2007-1-21')
     user.profile = userResult
     user.isMod = mods.hasOwnProperty(id)
 
