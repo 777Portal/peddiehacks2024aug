@@ -1,5 +1,7 @@
 const { port, sessionSecretKey} = require('./jsons/config.json');
 
+blips = require('./jsons/blips.json');
+
 users = require('./jsons/users.json'); // it feels so wrong, but for my modules to access these vars, they have to not have "var" for global variablility.
 console.log(users)
 
@@ -34,6 +36,43 @@ app.get('/login', (req, res) => {
   return res.sendFile('login.html', { root: './pages' });
 })
 
-app.listen(port, () => {
+app.get('/socket.io/socket.io.js', (req, res) => {
+  res.sendFile(__dirname + '/node_modules/socket.io/client-dist/socket.io.js');
+});
+
+//Whenever someone connects this gets executed
+
+let sockets = {};
+io.on('connection', function(socket) {
+  let socketSessionData = socket.request?.session
+  console.log('A user connected', socketSessionData.username);
+
+  socket.on('MOVE', (eventInfo) =>{
+      let x = eventInfo.x,
+          y = eventInfo.y
+
+      // console.log(x, y)
+      socket.emit('BLIPS', blips)
+    })
+
+    socket.on('createNewBlip', (eventInfo) =>{
+      let link = eventInfo.link,
+          thought = eventInfo.thought,
+          animation = eventInfo.animation,
+          x = eventInfo.x,
+          y = eventInfo.y
+
+      console.log(x, y)
+      socket.emit('BLIPS', blips)
+    })
+
+
+  socket.on('disconnect', function () {
+     console.log('A user disconnected');
+  });
+});
+
+
+server.listen(port, () => {
     console.log(`app listening on port ${port}`)
 })

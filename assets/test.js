@@ -7,6 +7,8 @@ ctx.textBaseline = 'middle';
 var offsetY = 0;
 var offsetX = 0;
 
+const socket = io();
+
 // getting mouse's x & y by subtracting client x and rectangles hight,
 function getMousePosition(canvas, event) {
     let rect = canvas.getBoundingClientRect();
@@ -16,31 +18,29 @@ function getMousePosition(canvas, event) {
 }
 
 var isClicking = false; // simple bool to see if we have to add for the offset
-
 var lastCords; // we use this to store the last cords to subtract to get the offset between the new yeah
 
-// debug, and also so i know where the heck i am
+// get pointer lock, and set is clicking
 canvas.addEventListener("mousedown", function (e) {
+    if (e.button !== 0) return;
     canvas.requestPointerLock()
+    document.getElementById('submit').style.display = 'none'
     isClicking = true
     cords = getMousePosition(canvas, e);
     lastCords = cords
-    console.log(cords, cords.x)
-    ctx.beginPath();
-    ctx.stroke();
-    ctx.arc(cords.x, cords.y, 40, 0, 4 * Math.PI);
-    ctx.stroke();
 });
 
-// update debug
+
+// update cordnates
 canvas.addEventListener("mousemove", (e) => {
     cords = getMousePosition(canvas, e);
-    document.getElementById('debug').innerText = `x: ${cords.x + offsetX}, y:${cords.y + offsetY} | cords: ${JSON.stringify(cords)}`
+    document.getElementById('debug').innerText = `x: ${cords.x + offsetX}, y:${cords.y + offsetY}`
 });
 
 document.addEventListener("pointerlockchange", function () {
     if (document.pointerLockElement === canvas) {
         console.log("Pointer is locked");
+        // basically, this is sent when right clicking so, we can open the blip menu
     } else {
         console.log("Pointer is unlocked");
         isClicking = false;
@@ -59,58 +59,23 @@ canvas.addEventListener("mousemove", (e) => {
 
     lastCords = { x: lastCords.x + movementX, y: lastCords.y + movementY };
 
-    console.log('offsets: ', offsetX, offsetY);
+    socket.emit('MOVE', lastCords)
 
     drawInRange(json);
 });
 
+var json = {}
+
 
 // eventually we will get this from the server, but this is an example for a circle to test our offset thing
-var json = 
-{
-    randomId: {
-        x: 10, 
-        y: 10, 
-        type:'guitar', 
-        color:'red',
-        text:'test',
-        user: 'exampleUsername',
-        url: 'https%3A%2F%2Fopen.spotify.com%2Fepisode%2F7makk4oTQel546B0PZlDM5',
-        scale: '1',
-        id: 'test'
-    },
-
-    otherRandomId: {
-        x: 100, 
-        y: 100, 
-        type:'guitar', 
-        color:'red',
-        text:'test',
-        user: 'exampleUsername',
-        scale: '1',
-        id: 'test2'
-    },
-
-    ermmmwhathesigma: {
-        x: 999, 
-        y: 999, 
-        type:'guitar', 
-        color:'red',
-        text:'test',
-        user: 'exampleUsername',
-        scale: '1',
-        id: 'test3'
-    }
-}
+socket.on('BLIPS', (blipsJson) => {
+    console.log(blipsJson)
+    json = blipsJson
+})
 
 var body = document.querySelector('body');
 
-function drawInRange(json){
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // why oh why must i do this to myself
-
-    // at this point, its better to just do this later cuz its a lot of math and my brain hurts
-
+function drawMap(){
     let img = document.getElementById('source')
 
     let imgWidth = 100; // setting how big the background texture will be
@@ -131,7 +96,12 @@ function drawInRange(json){
                 imgHeight
             );
         }
-    }
+    }  
+}
+
+async function drawInRange(json){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawMap();
 
     console.log(json)
 
@@ -153,7 +123,7 @@ function drawInRange(json){
 
         let blipDiv = document.getElementById(blipObject.id)
 
-        if (blipDiv){ // return early so we don't accidently make one bijaillion objects
+        if (blipDiv){ // return early so we don't accidently make one bajillion objects
             blipDiv.style.left = x+'px'
             blipDiv.style.top = y+'px'
             continue
@@ -162,7 +132,6 @@ function drawInRange(json){
         let id = blipObject.id
 
         let div = document.createElement('div')
-        div.innerText = blipObject.text
         div.id = id
         div.classList.add('blip')
         div.style.left = x
@@ -182,9 +151,24 @@ function drawInRange(json){
               r.resizeDrawingSurfaceToCanvas();
             },
         });
+
+        // const response = await fetch('https://open.spotify.com/oembed?url=' + blipObject.url);
+        // if (!response.ok) return console.error(`Response status error: ${response.status} on blip id ${id}`);
+        // const spotifyJson = await response.json();
+
+        let spotifyEmbed = document.createElement('div')
+        spotifyEmbed.innerHTML = blipObject.html
     
+        let text = document.createElement('p')
+        text.innerText = blipObject.text
+
         div.appendChild(document.createElement('br'))
         div.appendChild(canvas)
+        div.appendChild(document.createElement('br'))
+        div.appendChild(text)
+        div.appendChild(document.createElement('br'))
+        div.appendChild(spotifyEmbed)
+
         body.appendChild(div)
     } 
 }
