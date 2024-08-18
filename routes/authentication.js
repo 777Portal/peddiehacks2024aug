@@ -71,4 +71,13 @@ router.get('/authorize', async (req, res) => {
     return res.status(200).redirect('/')
 })
 
+router.get('logout', async (req, res) =>{
+  req.session.destroy((err) => {
+    if (err) {
+      console.error(err);
+    }
+    res.redirect('/');
+  });
+})
+
 module.exports = router;
