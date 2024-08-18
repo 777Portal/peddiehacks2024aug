@@ -6,10 +6,10 @@
 
 <html>
     <div>
-        <p id="loggedIn" style="float: right;">Not logged in</p>
+        <p id="loggedIn" style="position: absolute; right: 0px; top:15px">Not logged in</p>
     </div>
-    <body style="align-content: center;">
-        <h2 id="debug">Hover over the canvas to load location.</h2>
+    <body style="align-content: center; float:left;">
+        <h2 style="position: absolute;" id="debug">Hover over the canvas to load location.</h2>
         <canvas id="canvas"></canvas>
     </body>
     <script src="/socket.io/socket.io.js"></script>
@@ -23,10 +23,10 @@
         <h1>Submit a blip</h1>
         <hr>
         <div id="loggedOnSubmitBlip">
-            <h1 id="cordX">
+            <h3 id="cordX">
                 200
             </h1>
-            <h1 id="cordY">
+            <h3 id="cordY">
                 200 
             </h1>
             Song (spotify only): <input id="link">
@@ -35,14 +35,17 @@
             <br>
             Animation:
             <select name="animation" id="animation">
-                <option value="discord">discord</option>
-                <option value="guitar">guitar</option>
+                <option value="discord">Discord logo</option>
+                <option value="guitar">Guitar</option>
+                <option value="camera">Camera flash</option>
+                <option value="blackCat">Black cat (jinx)</option>
+                <option value="neutralFace">Neutral Face</option>
             </select>
             <br>
             <button id="submitBlipButton" class="primary">submit blip</button>
             <button class="secondary" onclick="this.parentElement.style.display = 'none'">close window</button>  
         </div>
-        <div id="loggedOffSubmitBlip" style="display: none;">
+        <div id="loggedOffSubmitBlip" style="display: none; z-index: 999999999999999 !important;">
             <h3>You can't submit a blip because you are logged out!</h3>
             <a href="/login">Log in?</a>
         </div>

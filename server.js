@@ -73,7 +73,7 @@ io.on('connection', function(socket) {
 
       if (!socketSessionData.authenticated) return socket.emit('ERR', {error: 'Not logged in!'});
 
-      let animations = ['discord', 'guitar']; // have to move this to config at some point for easier access
+      let animations = ['discord', 'guitar', 'blackCat', 'neutralFace', 'camera']; // have to move this to config at some point for easier access
 
       if (!animations.includes(animation)) return socket.emit('ERR', {error: 'That type doesn\'t exist!'});
 

@@ -4,6 +4,10 @@
     max-width: 300px;
 }
 
+html{
+    overflow: hidden;
+} 
+
 .blip:hover
 {
     z-index:555555 !important;
