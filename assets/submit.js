@@ -1,7 +1,6 @@
 canvas.addEventListener('contextmenu', function(e) {
     e.preventDefault();
     openBlipSubmit(e);
-    alert('hi');
     return false;
 }, false);
 
