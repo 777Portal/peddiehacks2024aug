@@ -18,7 +18,7 @@ function getMousePosition(canvas, event) {
 }
 
 var isClicking = false; // simple bool to see if we have to add for the offset
-var lastCords; // we use this to store the last cords to subtract to get the offset between the new yeah
+var lastCords; // we use this to store the last cords to subtract to get the offset between the new mouse pos
 
 // get pointer lock, and set is clicking
 canvas.addEventListener("mousedown", function (e) {
@@ -39,9 +39,9 @@ canvas.addEventListener("mousemove", (e) => {
 
 document.addEventListener("pointerlockchange", function () {
     if (document.pointerLockElement === canvas) {
-        console.log("Pointer is locked");
+        // console.log("Pointer is locked");
     } else {
-        console.log("Pointer is unlocked");
+        // console.log("Pointer is unlocked");
         isClicking = false;
     }
 });
@@ -66,32 +66,32 @@ canvas.addEventListener("mousemove", (e) => {
 var json = {}
 
 
-// eventually we will get this from the server, but this is an example for a circle to test our offset thing
+// getting blip data fr
 socket.on('BLIPS', (blipsJson) => {
-    console.log(blipsJson)
+    drawInRange(blipsJson) // update it so dynamically render new blips that we create.
     json = blipsJson
 })
 
 var body = document.querySelector('body');
 
 function drawMap(){
-    let img = document.getElementById('source');
-    let imgWidth = 100; 
+    let img = document.getElementById('source'); // get grass texture from the hidden img
+    let imgWidth = 100;  // setting texture size
     let imgHeight = 100;
     
-    // get the visable area considering offset
+    // get the starting tiles considering offset
     let startX = Math.floor(offsetX / imgWidth);
     let startY = Math.floor(offsetY / imgHeight);
     
-    let rows = Math.ceil(canvas.height / imgHeight) + 2; // +2 to ensure it covers partially visible areas
+    let rows = Math.ceil(canvas.height / imgHeight) + 2; // +2 to ensure it covers places that aren't completely in the "camera"
     let cols = Math.ceil(canvas.width / imgWidth) + 2;
     
-    for (let row = -1; row < rows; row++) {
-        for (let col = -1; col < cols; col++) {
-            let x = (col + startX) * imgWidth - offsetX;
+    for (let row = -1; row < rows; row++) { // again start at -1 to account for tiles that might not be in range
+        for (let col = -1; col < cols; col++) { // rendering both rows and columns
+            let x = (col + startX) * imgWidth - offsetX; // calculate the corner x & y
             let y = (row + startY) * imgHeight - offsetY;
             
-            ctx.drawImage(img, x, y, imgWidth, imgHeight);
+            ctx.drawImage(img, x, y, imgWidth, imgHeight); // draw our "tile"
         }
     }  
 }
@@ -101,8 +101,6 @@ async function drawInRange(json){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawMap();
 
-    console.log(json)
-
     // rendering individual things returned from the funny json
     for (let blip in json) {
         let blipObject = json[blip] // we make our blip object so we can add the info, and init the rev object
@@ -110,14 +108,14 @@ async function drawInRange(json){
         let x = blipObject.x - offsetX
         let y = blipObject.y - offsetY
 
-        ctx.beginPath();
-        ctx.stroke();
-        ctx.arc( x, y, 10, 0, 2 * Math.PI);
-        ctx.fillStyle = "red";
-        ctx.fill();
-        ctx.strokeStyle = "blue";
-        ctx.stroke();
-
+        // debug stuffz
+        // ctx.beginPath(); 
+        // ctx.stroke();
+        // ctx.arc( x, y, 10, 0, 2 * Math.PI);
+        // ctx.fillStyle = "red";
+        // ctx.fill();
+        // ctx.strokeStyle = "blue";
+        // ctx.stroke();
 
         let blipDiv = document.getElementById(blipObject.id)
 

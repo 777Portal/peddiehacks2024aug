@@ -9,14 +9,13 @@ loggedIn = false
 
 checkStatus();
 async function checkStatus(){
-    const selfInfo = await fetch('/api/v1/self/info');
+    const selfInfo = await fetch('/api/v1/self/info'); // get info from api self
 
-    console.log(selfInfo)
-    loggedInInfo = document.getElementById('loggedIn')
+    loggedInInfo = document.getElementById('loggedIn') // setting the logged in info
 
     if (!selfInfo.ok) { 
         document.getElementById('loggedOnSubmitBlip').style.display = 'none' 
-        document.getElementById('loggedOffSubmitBlip').style.display = 'block'
+        document.getElementById('loggedOffSubmitBlip').style.display = 'block' // changing the blip submit menu so it shows you aren't logged in.
         console.warn('not logged in') 
         loggedIn = false
         return;
@@ -32,8 +31,7 @@ function openBlipSubmit(e)
 {
 
     e.preventDefault();
-    cords = getMousePosition(canvas, e);
-    console.log(cords)
+    cords = getMousePosition(canvas, e); // setting the values that will be submitted to the server
     let submitBlipMenu = document.getElementById('submit')
     submitBlipMenu.style.display = 'block';
     submitBlipMenu.style.left = cords.x+"px";
@@ -53,14 +51,12 @@ function openBlipSubmit(e)
 
 // animation, thought, link, cords
 function handleBlipSubmit(){
-    console.log('hello')
-
     let x = document.getElementById('cordX').innerText
     let y = document.getElementById('cordY').innerText
 
-    link = document.getElementById('link').value
-    thought = document.getElementById('thought').value
-    animation = document.getElementById('animation').value
+    link = document.getElementById('link').value // spotify link
+    thought = document.getElementById('thought').value // text
+    animation = document.getElementById('animation').value // type
 
     socket.emit('CREATEBLIP', {x, y, link, thought, animation})
     console.log(animation, thought, link, cordX, cordY)

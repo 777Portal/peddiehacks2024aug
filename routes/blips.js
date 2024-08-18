@@ -6,7 +6,6 @@ const { writeFile, readFile } = require('fs');
 
 const checkAuth = (req, res, next) => {
     if (!req.session.mod) {
-      console.log('attempted')
       return res.redirect('/');
     }
     next();
@@ -25,7 +24,7 @@ router.get('/delete/:id', checkAuth, async (req, res) => {
     let id = req.params.id
 
     let blipToDelete = blips[id];
-    console.log(blipToDelete, id)
+    console.log(`deleting blip with id: ${id}`)
     if (!blipToDelete) return res.status(404).json( { 'errors': `blip ${id} not found. please double check the blip id`})
 
     delete blips[id];

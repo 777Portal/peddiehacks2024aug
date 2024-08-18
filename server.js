@@ -69,8 +69,6 @@ io.on('connection', function(socket) {
 
       thought = thought.substr(0, 300)
 
-      console.log(link)
-
       if (!socketSessionData.authenticated) return socket.emit('ERR', {error: 'Not logged in!'});
 
       let animations = ['discord', 'guitar', 'blackCat', 'neutralFace', 'camera']; // have to move this to config at some point for easier access
@@ -107,9 +105,6 @@ io.on('connection', function(socket) {
       blips[uuid].creationTime = new Date();
 
       users[socketSessionData.profile.id].lastBlip = new Date(); // and update this so they can't span the heck out of the website without different accounts
-
-      console.log()
-
       
       console.log(link, thought, animation, x, y)
       // and update all clients that the new blip has been created.

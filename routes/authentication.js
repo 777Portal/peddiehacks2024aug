@@ -1,5 +1,4 @@
 const { clientId, clientSecret, redirectUri, mods} = require('../jsons/config.json');
-console.log(mods)
 
 const { request } = require('undici'); // tried to use native fetch and it made me want to d]e, so we use a library for handling web requests.
 
@@ -31,7 +30,6 @@ router.get('/authorize', async (req, res) => {
 
     const o2authData = await tokenResponseData.body.json();
     if (o2authData.error) return res.redirect('/login')
-    console.log(o2authData)
 
     let userResult = await request('https://discord.com/api/users/@me', {
       headers: {
