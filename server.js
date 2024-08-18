@@ -56,6 +56,8 @@ io.on('connection', function(socket) {
   let socketSessionData = socket.request?.session
   console.log('A user connected', socketSessionData.username);
 
+  socket.emit('BLIPS', blips)
+
   socket.on('MOVE', (eventInfo) =>{
       socket.emit('BLIPS', blips)
     })

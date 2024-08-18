@@ -9,6 +9,18 @@ var offsetX = 0;
 
 const socket = io();
 
+socket.on("connect", () => {
+    drawMap();
+
+    ctx.fillStyle = "#a1ddca";
+    ctx.font = '50px sans-serif';
+
+    var textString = "Click anywhere to load blips",
+        textWidth = ctx.measureText(textString ).width;
+
+    ctx.fillText(textString , (canvas.width/2) - (textWidth / 2), 100);
+});
+
 // getting mouse's x & y by subtracting client x and rectangles hight,
 function getMousePosition(canvas, event) {
     let rect = canvas.getBoundingClientRect();
@@ -68,7 +80,6 @@ var json = {}
 
 // getting blip data fr
 socket.on('BLIPS', (blipsJson) => {
-    drawInRange(blipsJson) // update it so dynamically render new blips that we create.
     json = blipsJson
 })
 
