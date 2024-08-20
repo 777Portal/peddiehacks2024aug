@@ -32,7 +32,7 @@ app.use('/api/v1/auth/', authentication)
 const blipRoutes = require("./routes/blips") // import auth routes
 app.use('/api/v1/blips/', blipRoutes)
 
-const selfRoutes = require("./routes/self") // import auth routes
+const selfRoutes = require("./routes/self"); // import auth routes
 app.use('/api/v1/self/', selfRoutes)
 
 app.use('/assets', express.static('assets')) // public files in ./assets
@@ -53,14 +53,37 @@ app.get('/socket.io/socket.io.js', (req, res) => {
 
 let sockets = {};
 io.on('connection', function(socket) {
-  let socketSessionData = socket.request?.session
-  console.log('A user connected', socketSessionData.username);
+  sockets[socket.id] = {}
+  sockets[socket.id].socket = socket
 
-  socket.emit('BLIPS', blips)
+  let socketSessionData = socket.request?.session
+  console.log(socketSessionData?.profile?.username ?? 'Anonymous user', 'connected.');
+
+  // nvm i was gonna only show authenticaated users but it should be fine, i hope.
+  // socket.on('AUTHED', () => {
+  //   let socketSessionData = socket.request?.session
+
+  //   if (!socketSessionData?.authenticated) return socket.emit('ERR', {error: 'Not logged in!'});
+  // })
+
+  cursors = {}
+  updateUsers()
+  // socket.emit('UPD', {blips, cursors})
 
   socket.on('MOVE', (eventInfo) =>{
-      socket.emit('BLIPS', blips)
-    })
+    // console.log(eventInfo.x, eventInfo.y)
+
+    sockets[socket.id].pos = {}
+
+    sockets[socket.id].pos.x = eventInfo.x
+    sockets[socket.id].pos.y = eventInfo.y
+
+    let x = sockets[socket.id].pos.x
+    let y = sockets[socket.id].pos.y
+
+    console.log(x, y)
+    updateUsers()
+  })
 
     socket.on('CREATEBLIP', async (eventInfo) =>{
       let link = eventInfo.link,
@@ -110,15 +133,45 @@ io.on('connection', function(socket) {
       
       console.log(link, thought, animation, x, y)
       // and update all clients that the new blip has been created.
-      socket.emit('BLIPS', blips)
+      updateUsers();
+      // socket.emit('UPD', { blips })
       writeFile('./jsons/blips.json', JSON.stringify(blips), (error) => {console.error(error, blips)}) // update users.json
     })
 
 
   socket.on('disconnect', function () {
      console.log('A user disconnected');
+     delete sockets[socket.id];
+     updateUsers();
   });
 });
+
+function updateUsers(){
+  let cursors = {}
+  
+  for (socketIndex in sockets){
+    let info = sockets[socketIndex]
+    let socket = sockets[socketIndex].socket
+
+    if (!info || !socket || !socket.id) continue;
+    
+    console.log(socket.id)
+
+    cursors[socket.id] = {}
+    cursors[socket.id].x = info?.pos?.x
+    cursors[socket.id].y = info?.pos?.y
+  }
+
+  console.log(cursors)
+
+  for (socketIndex in sockets){
+    let info = sockets[socketIndex]
+    let socket = sockets[socketIndex].socket
+    if (!info || !socket || !socket.id) continue;
+
+    socket.emit('UPD', { blips, cursors })
+  }
+}
 
 server.listen(port, () => {
     console.log(`app listening on port ${port}`)

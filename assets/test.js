@@ -1,11 +1,22 @@
 var canvas = document.querySelector("canvas");
-var ctx = canvas.getContext("2d");
+var ctx = canvas.getContext("2d", { alpha: false });
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 ctx.textBaseline = 'middle';
 
-var offsetY = 0;
-var offsetX = 0;
+const dpr = window.devicePixelRatio;
+const rect = canvas.getBoundingClientRect();
+
+canvas.width = rect.width * dpr;
+canvas.height = rect.height * dpr;
+
+ctx.scale(dpr, dpr);
+
+canvas.style.width = `${rect.width}px`;
+canvas.style.height = `${rect.height}px`;
+
+let offsetY = 0;
+let offsetX = 0;
 
 const socket = io();
 
@@ -15,7 +26,7 @@ socket.on("connect", () => {
     ctx.fillStyle = "#a1ddca";
     ctx.font = '50px sans-serif';
 
-    var textString = "Click anywhere to load blips",
+    let textString = "Click anywhere to load blips",
         textWidth = ctx.measureText(textString ).width;
 
     ctx.fillText(textString , (canvas.width/2) - (textWidth / 2), 100);
@@ -46,7 +57,12 @@ canvas.addEventListener("mousedown", function (e) {
 // update cordnates
 canvas.addEventListener("mousemove", (e) => {
     cords = getMousePosition(canvas, e);
-    document.getElementById('debug').innerText = `x: ${cords.x + offsetX}, y:${cords.y + offsetY}`
+    x = cords.x + offsetX
+    y = cords.y + offsetY
+    
+    document.getElementById('debug').innerText = `x: ${x}, y:${y}`
+
+    socket.emit('MOVE', {x, y})
 });
 
 document.addEventListener("pointerlockchange", function () {
@@ -68,19 +84,25 @@ canvas.addEventListener("mousemove", (e) => {
     offsetX += movementX;
     offsetY += movementY;
 
-    lastCords = { x: lastCords.x + movementX, y: lastCords.y + movementY };
+    let x = lastCords.x + movementX
+    let y = lastCords.Y + movementY
 
-    socket.emit('MOVE', lastCords)
+    lastCords = { x, y };
+    // socket.emit('MOVE', {x, y})
 
-    drawInRange(json);
+    render(blipsJson, cursorsJson);
 });
 
-var json = {}
+var blipsJson = {}
+var cursorsJson = {}
 
 
 // getting blip data fr
-socket.on('BLIPS', (blipsJson) => {
-    json = blipsJson
+socket.on('UPD', (info) => {
+    console.log('Update')
+    blipsJson = info.blips
+    cursorsJson = info.cursors
+    render(blipsJson, cursorsJson);
 })
 
 var body = document.querySelector('body');
@@ -107,26 +129,13 @@ function drawMap(){
     }  
 }
 
-
-async function drawInRange(json){
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawMap();
-
+function drawBlips(blipJson){
     // rendering individual things returned from the funny json
-    for (let blip in json) {
-        let blipObject = json[blip] // we make our blip object so we can add the info, and init the rev object
+    for (let blip in blipJson) {
+        let blipObject = blipJson[blip] // we make our blip object so we can add the info, and init the rev object
         
         let x = blipObject.x - offsetX
         let y = blipObject.y - offsetY
-
-        // debug stuffz
-        // ctx.beginPath(); 
-        // ctx.stroke();
-        // ctx.arc( x, y, 10, 0, 2 * Math.PI);
-        // ctx.fillStyle = "red";
-        // ctx.fill();
-        // ctx.strokeStyle = "blue";
-        // ctx.stroke();
 
         let blipDiv = document.getElementById(blipObject.id)
 
@@ -173,6 +182,26 @@ async function drawInRange(json){
         div.appendChild(spotifyEmbed)
 
         body.appendChild(div)
-    } 
+    }
+}
 
+function drawCursors(cursors){
+    let img = document.getElementById('cursor');
+    for (let cursorIndex in cursors){
+        let cursor = cursors[cursorIndex]
+        console.log(cursor.x, cursor.y)
+
+        let x = parseInt(cursor.x - offsetX)
+        let y = parseInt(cursor.y - offsetY)
+
+        ctx.drawImage(img, x, y, 25, 25);
+    }
+}
+
+
+async function render(blips, cursors){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawMap();
+    drawCursors(cursors)
+    drawBlips(blips)
 }
